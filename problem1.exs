@@ -10,11 +10,17 @@
 defmodule Problem1 do 
 	def is_multiple_of?(div,denom), do: rem(denom, div) == 0
 
-	def is_multiple_of_three_and_five?(num), do: is_multiple_of?(3,num) and is_multiple_of?(5,num)
+	def is_multiple_of_three?(num), do: is_multiple_of?(3,num)
+
+	def is_multiple_of_five?(num), do: is_multiple_of?(5,num)
+
+	def is_multiple_of_three_and_five?(num), do: is_multiple_of_three?(num) and is_multiple_of_five?(num)
 
 	def multiples_of_three_and_five_under(num) do
-		1..num |> Enum.filter(&is_multiple_of_three_and_five?/1)
+		#use erlang stdlib function for genrating a list grown by step 5
+		:lists.seq(0,1000,5) |> Enum.filter(&is_multiple_of_three?/1)
 	end
+
 	def sum_of_multiples_of_three_and_five_under(num) do
 		multiples_of_three_and_five_under(num) |> Enum.sum
 	end
@@ -57,5 +63,4 @@ defmodule Problem1Test do
 	test "sum_of_multiples_of_three_and_five_under 1000" do
 		assert sum_of_multiples_of_three_and_five_under(1000) == 33165
 	end			
-	IO.puts multiples_of_three_and_five_under(1000)
 end
