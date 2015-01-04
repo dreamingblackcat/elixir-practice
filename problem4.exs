@@ -16,26 +16,40 @@ defmodule Problem4 do
 		num == Integer.to_char_list(num) |> Enum.reverse |> List.to_string |> String.to_integer(10) 
 	end
 	
-	def possible_nums(nums) do
-		nums |> Enum.flat_map(fn i -> Enum.map nums, fn j -> [i,j,i*j] end end)
-	end
+	# def possible_nums(nums) do
+	# 	nums |> Enum.flat_map(fn i -> Enum.map nums, fn j -> [i,j,i*j] end end)
+	# end
 
 	def largest_two_digit_palindrome do
-		99..10 
-		|> Enum.to_list |> worker
-
+		worker([99])
 	end
 
-	defp worker(list) do
-		list
-		|> possible_nums 
-		|> Enum.sort(fn l1,l2 -> List.last(l1) >= List.last(l2) end)
-		|> Enum.drop_while(fn lst -> [_,_,p] = lst ;!palindrome?(p) end)
-		|> List.first
+	# defp worker(list) do
+	# 	list
+	# 	|> possible_nums 
+	# 	|> Enum.sort(fn l1,l2 -> List.last(l1) >= List.last(l2) end)
+	# 	|> Enum.drop_while(fn lst -> [_,_,p] = lst ;!palindrome?(p) end)
+	# 	|> List.first
+	# end
+
+	def worker(list) do
+		test_value =  list 
+						|> Enum.map(fn i -> [i,List.last(list),i * List.last(list)] end) 
+						|> Enum.drop_while(fn lst -> [_,_,p] = lst; !palindrome?(p) end) 
+		case test_value do
+			[] -> worker(list ++ [List.last(list)-1])
+			a  ->  a |> List.first
+		end
+		 # cond do
+		 # 	palindrome? first*first       -> IO.puts(second);[first,first,first*first]
+		 # 	palindrome? first*(second-n)  -> IO.puts(second);[first,(second-n),first*(second-n)]
+		 # 	palindrome? second*(second-n) -> IO.puts(second);[second,(second-n),second*(second-n)]
+		 # 	true            -> worker(first,second,n+1)
+		 # end
 	end
 
 	def largest_three_digit_palindrome do
-		999..100 |> Enum.to_list |> worker
+		worker([999])
 	end
 end
 
@@ -60,7 +74,7 @@ defmodule Problem4Test do
 
 	test "Problem4Test" do
 		ans = largest_three_digit_palindrome() |> List.last
-		# assert [1] == 999..100 |> Enum.to_list |> worker2
+		assert [1] == largest_three_digit_palindrome
 		assert "d4cfc27d16ea72a96b83d9bdef6ce2ec" == :os.cmd('echo -n #{ans} | md5sum') |> List.to_string |> String.split(" ") |> List.first
 	end
 end
