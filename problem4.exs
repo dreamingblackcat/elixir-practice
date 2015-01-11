@@ -35,10 +35,10 @@ defmodule Problem4 do
 	def worker(list) do
 		test_value =  list 
 						|> Enum.map(fn i -> [i,List.last(list),i * List.last(list)] end) 
-						|> Enum.drop_while(fn lst -> [_,_,p] = lst; !palindrome?(p) end) 
+						|> Enum.filter(fn lst -> [_,_,p] = lst; palindrome?(p) end) 
 		case test_value do
 			[] -> worker(list ++ [List.last(list)-1])
-			a  ->  a |> List.first
+			a  ->  [a,list]
 		end
 		 # cond do
 		 # 	palindrome? first*first       -> IO.puts(second);[first,first,first*first]
@@ -74,7 +74,7 @@ defmodule Problem4Test do
 
 	test "Problem4Test" do
 		ans = largest_three_digit_palindrome() |> List.last
-		assert [1] == largest_three_digit_palindrome
+		assert [993, 913, 906609] == largest_three_digit_palindrome
 		assert "d4cfc27d16ea72a96b83d9bdef6ce2ec" == :os.cmd('echo -n #{ans} | md5sum') |> List.to_string |> String.split(" ") |> List.first
 	end
 end
