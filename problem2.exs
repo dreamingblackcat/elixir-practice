@@ -9,8 +9,11 @@
 
 #    By considering the terms in the Fibonacci sequence whose values do not
 #    exceed four million, find the sum of the even-valued terms.
+# Answer: 4194eb91842c8e7e6df099ca73c38f28
+
 
 defmodule FibSequence do
+	require Integer
 	def generate_while first, second, predicate do
 		stream(first,second) |> Enum.take_while(predicate)
 	end
@@ -23,6 +26,10 @@ defmodule FibSequence do
 		end) |> Stream.map(fn lst -> List.last(lst) end)
 	end
 
+	def sum_of_even_valued_fibonaccis_under_four_million() do
+		FibSequence.generate_while(1,2,fn num -> num < 4_000_000 end) |> Enum.filter(&Integer.is_even/1) |> Enum.sum
+	end
+
 end
 
 ExUnit.start
@@ -30,7 +37,7 @@ ExUnit.start
 defmodule Problem2Test do
 
 	use ExUnit.Case, async: true
-	require Integer
+	import FibSequence
 	# defmodule TestUtilities do
 	# 	#code from https://github.com/pigoz/katas/blob/master/elixir-lists-rotate/lib/lists_rotate_elixir.ex		
 	# 	defmodule ListsRotation do
@@ -71,7 +78,10 @@ defmodule Problem2Test do
 		fitlered_result = FibSequence.generate_while(1,2,condition) |> Enum.filter(fn num-> !condition.(num) end)
 		assert fitlered_result == []
 	end
-
-	IO.puts FibSequence.generate_while(1,2,fn num -> num < 4_000_000 end) |> Enum.filter(&Integer.is_even/1) |> Enum.sum
 	
+	test "Problem2Test" do
+		result = sum_of_even_valued_fibonaccis_under_four_million()
+		assert "4194eb91842c8e7e6df099ca73c38f28" == :os.cmd('echo -n #{result} | md5sum') |> List.to_string |> String.split(" ") |> List.first
+		IO.puts "Anser is #{result}"
+	end
 end
