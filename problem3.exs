@@ -5,6 +5,7 @@
 #    The prime factors of 13195 are 5, 7, 13 and 29.
 
 #    What is the largest prime factor of the number 600851475143 ?
+# 	Answer: 94c4dd41f9dddce696557d3717d98d82
 
 
 defmodule Problem3 do
@@ -73,15 +74,15 @@ defmodule Problem3Test do
 		assert prime_divisors(29) == [29]
 	end
 
-	test "laragest_prime_factor" do
+	test "given result is correct" do
 		assert prime_factorize(13195,2) == 29
 	end
-	IO.puts prime_factorize(600851475143,2)
+
+	test "Problem6Test" do
+		result = prime_factorize(600851475143,2)
+		assert "94c4dd41f9dddce696557d3717d98d82" == :os.cmd('echo -n #{result} | md5sum') |> List.to_string |> String.split(" ") |> List.first
+		IO.puts "result is #{result}"
+	end
 end
 
-# 1000 = 500 * 2
-#      = 250 * 2 * 2
-#      = 125 * 2 * 2
-#      = 25 * 5 * 2 * 2
-#      = 5 * 5 * 5 * 2 * 2
 
