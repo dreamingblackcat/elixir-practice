@@ -73,8 +73,9 @@ defmodule Problem4Test do
 	end
 
 	test "Problem4Test" do
-		ans = largest_three_digit_palindrome() |> List.last
+		result = largest_three_digit_palindrome() |> List.last
 		assert [993, 913, 906609] == largest_three_digit_palindrome
-		assert "d4cfc27d16ea72a96b83d9bdef6ce2ec" == :os.cmd('echo -n #{ans} | md5sum') |> List.to_string |> String.split(" ") |> List.first
+		assert "d4cfc27d16ea72a96b83d9bdef6ce2ec" == :os.cmd('echo -n #{result} | md5sum') |> List.to_string |> String.split(" ") |> List.first
+		IO.puts "result is #{result}"
 	end
 end
