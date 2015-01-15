@@ -10,40 +10,31 @@
    
 #    Answer: 8c32ab09ec0210af60d392e9b2009560
 #    ans: 104743
-#    took too long to test with ExUnit
 defmodule Problem7 do
 
-	def ten_thousand_first_prime do
-		nth_prime(10001)
-	end
-	
-	def sixth_prime do
-		nth_prime(6)
-	end
-
-	def prime?(2), do: true
-
-	def prime?(n) when rem(n,2) == 0, do: false
-
-	def prime?(n) , do: divisors(n) == [n]
-
-	def divisors(n) do
-		:lists.seq(3,n,2) |> Enum.filter(fn i -> rem(n,i) == 0 end)
+	def prime_test?(tuple) do
+		{n,list} = tuple
+		cond do
+			list == []            -> true         
+			rem(n, hd(list)) == 0 -> false
+			hd(list) * 2 > n      -> true    
+			true                  -> prime_test?({n, tl(list)})
+		end
 	end
 
-	def nth_prime(1) do
-		2
-	end
+	def nth_prime(1), do: 2
 
 	def nth_prime(n) do
-		Stream.iterate(3,&(find_prime/1)) |> Enum.take(n-1) |> List.last
+		next_prime([2],3,n)
 	end
 
-	def find_prime(num) do
+	def next_prime(done,last,target) do
+		current_is_prime = prime_test?({last,done})
 		cond do
-			prime?(num+2) -> IO.puts num+2
-								num+2
-			!prime?(num+2) -> find_prime(num+2)
+			done |> Enum.count == target -> done |> List.last
+			current_is_prime -> next_prime(done ++ [last],last+2,target)
+
+			!current_is_prime -> next_prime(done,last+2,target)
 		end
 	end
 end
@@ -54,15 +45,16 @@ defmodule Problem7Test do
 
 	use ExUnit.Case, async: true
 	import Problem7
-	
-	test "given sixth prime is correct" do
-		assert sixth_prime == 13
+	test "prime test is correct" do
+		assert prime_test?({5,[2,3]})
 	end
-	# test "Problem7Test" do
-	# 	result = ten_thousand_first_prime()
-	# 	assert "8c32ab09ec0210af60d392e9b2009560" == :os.cmd('echo -n #{result} | md5sum') |> List.to_string |> String.split(" ") |> List.first
-	# 	IO.puts "result is #{result}"
-	# end
-	IO.puts ten_thousand_first_prime()
+	test "given sixth prime is correct" do
+		assert nth_prime(6) == 13
+	end
+	test "Problem7Test" do
+		result = nth_prime(10001)
+		assert "8c32ab09ec0210af60d392e9b2009560" == :os.cmd('echo -n #{result} | md5sum') |> List.to_string |> String.split(" ") |> List.first
+		IO.puts "result is #{result}"
+	end
 
 end
