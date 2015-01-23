@@ -47,7 +47,7 @@ end
 
 ExUnit.start
 
-defmodule Problem9Test do
+defmodule Problem10Test do
 
    use ExUnit.Case, async: true
    import Problem10
