@@ -27,126 +27,82 @@
    
 #    Answer: 8091de7d285989bbfa9a2f9f3bdcc7c0
 
-defmodule ConFact do
-  
-  def concurrent_factorize(n) do
-    receive do
-      {:start, server_pid} ->
-        half_n = div(n,2)
-        pid1 = spawn_link(__MODULE__, :_concurrent_factorize,[n,div(half_n,4),1,[]])
-        pid2 = spawn_link(__MODULE__, :_concurrent_factorize,[n,div(half_n,4)*2,div(half_n,4),[]])
-        pid3 = spawn_link(__MODULE__, :_concurrent_factorize,[n,div(half_n,4)*3,div(half_n,4)*2,[]])
-        pid4 = spawn_link(__MODULE__, :_concurrent_factorize,[n,half_n,div(half_n,4)*3,[]]) 
-        [pid1,pid2,pid3,pid4] |> Enum.each(&(send &1,{:compute,self}))
-        data = concurrent_factorize_wait([],0)
-        IO.inspect data
-        send server_pid, {:ok,data}
-    end
-  end
-
-  def concurrent_factorize_wait(result, count) do
-    IO.puts "Count: #{count}"
-    cond do
-      count < 4 -> receive do {:ok, factors} ->concurrent_factorize_wait(result ++ factors,count+1)  end
-      
-      true       -> IO.puts("first factors"); result
-    end
-  end
-
-  def _concurrent_factorize(n,partial_n,current,factors) do
-     receive do
-       {:compute, server_pid} -> send server_pid, {:ok, partial_factorize(n,partial_n,current,factors)};IO.inspect({n,partial_n,current,factors})
-       
-     end 
-     IO.puts("Dying")
-     IO.inspect(self)    
-  end
-
-  def partial_factorize(n, partial_n, current, factors) do
-    cond do
-      current <= partial_n -> partial_factorize(n,partial_n,current+1,cond do rem(n,current) == 0 -> factors++[current]; true -> factors; end)
-      true                -> factors   
-    end
-  end
-end
-
-defmodule ConFind do
-  
-end
-
 defmodule Problem12 do
-  
-  import ConFact
-  def stream_triangle_sequence do
-    Stream.unfold({1,1}, fn l -> {i,v} = l; {l,{i+1,v+(i+1)}} end)
-  end
+	
+	def triangular(n), do: div(n*(n+1),2)
+
+	def factorize(n) do
+	  _factorize(n,2,div(n,2),[])
+	end
+
+	defp _factorize(n,current,limit,factors) do
+	  cond do
+	    n <= 1              -> factors   
+	    current > limit     -> factors
+	    rem(n,current) == 0 -> _factorize(div(n,current),2,limit,factors++[current]) 
+	    rem(n,current) != 0 -> _factorize(n,current+1,limit,factors) 
+	  end
+	end
+
+	def compress(list) do
+		_compress(list,[])
+	end
+
+	defp _compress([],result),do: result |> Enum.reverse
+
+	# def _compress([a | tail],[a | rest]),do: _compress(tail,[{a,2} | rest])
+
+	defp _compress([a | tail],[{a,n} | rest]), do: _compress(tail,[{a,n+1} | rest ])
+
+	defp _compress([a | tail],result), do: _compress(tail,[{a,1} | result])
 
 
-  def concurrent_find(prev,n) do
-     pid = spawn(ConFact,:concurrent_factorize,[prev+n])
-     send pid , {:start,self}
-     factors = receive do
-        {:ok,facts} -> facts
-     end
-     cond do
-      factors |> Enum.count <= 500 -> IO.inspect({prev+n,n+1,factors}); concurrent_find(prev + n,n+1)
-      true                                     -> {prev+n,factors}
-     end
-  end
+	def factor_counts(factors) do
+		compress(factors) |> Enum.reduce(1, fn ({_,p},acc) -> acc * (p+1)  end)
+	end
 
+	def find(n) do
+		count = triangular(n) |> factorize |> factor_counts
+		cond do
+			count <= 500 -> find(n+2)
+			true         -> {n,triangular(n),count}
+		end 
+	end
 
-
-  def find(prev,n) do
-     factors = factorize(prev+n)
-     cond do
-      factors |> Enum.count <= 500 -> IO.inspect({prev+n,n+1,factors});find(prev + n,n+1)
-      true                                     -> {prev+n,factors}
-     end
-  end
-
-  def factorize(n) do
-    _factorize(n,1,[])
-  end
-
-  defp _factorize(n,current,factors) do
-    cond do
-      current <= div(n,2) -> _factorize(n,current+1,cond do rem(n,current) == 0 -> factors++[current]; true -> factors; end)
-      true                -> factors   
-    end
-  end
-
-  def take_last_value(list) do
-    {_,val} = (list |> List.last)
-    val
-  end
-
-  def problem12_result do
-    # triangle_sequence |> Enum.take_while(fn tuple -> {_,val} = tuple;IO.inspect(tuple);(factorize(val) |> Enum.count) < 500 end) |> take_last_value
-    concurrent_find(28,8)
-  end
-  
+	def problem12_result do
+		{_,val,_} = find(1)
+		val
+	end
 end
-
 
 ExUnit.start
 
 defmodule Problem12Test do
 
-   use ExUnit.Case, async: true
-   import Problem12
+	   use ExUnit.Case, async: true
+	   import Problem12
 
-   test "factorizing 10" do
-      assert factorize(10) == [1,2,5]
-   end
+	   test "triangular sequence" do
+	   		assert triangular(7) == 28
+	   		assert triangular(10) == 55
+	   		assert triangular(100) == 5050
+	   end
 
-   test "producing triangle sequence of 7" do
-      # assert triangle_sequence |> Enum.take(7) |> take_last_value == 28
-   end
+	   test "compressing factors" do
+	   		assert compress([1,2,2,2,3,3,7]) == [{1,1},{2,3},{3,2},{7,1}]
+	   end
 
-   # test "Problem11Test" do
-    # result = problem12_result
-   #  assert "8091de7d285989bbfa9a2f9f3bdcc7c0" == :os.cmd('echo -n #{result} | md5sum') |> List.to_string |> String.split(" ") |> List.first
-   # end
-    # IO.puts "result is #{result}"
+	   test "factorizing 10" do
+	      assert factorize(10) == [2,5]
+	   end
 
+	   test "counting factors" do
+	  		assert factor_counts([{2,1},{5,1}]) == 4
+	   end
+
+	   test "Problem11Test" do
+	    result = problem12_result
+	    assert "8091de7d285989bbfa9a2f9f3bdcc7c0" == :os.cmd('echo -n #{result} | md5sum') |> List.to_string |> String.split(" ") |> List.first
+	    IO.puts "result is #{result}"
+	   end
 end
