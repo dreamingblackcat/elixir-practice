@@ -106,3 +106,4 @@ defmodule Problem12Test do
 	    IO.puts "result is #{result}"
 	   end
 end
+
